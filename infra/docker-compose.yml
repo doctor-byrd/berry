@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: nx_postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: dev_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d dev_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: falkordb/falkordb:6.0.1
+    container_name: nx_redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --requirepass dev_redis_password
+    volumes:
+      - redis_data:/data
+
+  storage:
+    image: alpine/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: local-object-storage
+    user: root
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9000:9000"       # API Port
+      - "127.0.0.1:9001:9001"       # Console UI Port
+    environment:
+      MINIO_ROOT_USER: storage_admin
+      MINIO_ROOT_PASSWORD: storage_secure_password
+    volumes:
+      - storage_data:/data
+    command: server /data --console-address ":9001"
+
+  pgadmin:
+    image: dpage/pgadmin4:8.14
+    container_name: nx_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@domain.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+    ports:
+      - "127.0.0.1:8080:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:

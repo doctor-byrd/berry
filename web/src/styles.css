@@ -1,0 +1,12 @@
+/* You can add global styles to this file, and also import other style files */
+@layer tailwind-base, chakra, tailwind-utilities;
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@tailwind components;
+
+@layer tailwind-utilities {
+  @tailwind utilities;
+}

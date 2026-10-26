@@ -1,0 +1,13 @@
+export const environment = {
+    ENVIRONMENT:process.env.ENVIRONMENT,
+    DATABASE_URL:process.env.DATABASE_URL,
+    REDIS_URL:process.env.REDIS_URL,
+    JWT_SECRET:process.env.JWT_SECRET,
+    VAULT_ROOT_KEY:process.env.VAULT_ROOT_KEY,
+    STORAGE_ENDPOINT:process.env.STORAGE_ENDPOINT,
+    STORAGE_PORT:process.env.STORAGE_PORT,
+    STORAGE_ACCESS_KEY:process.env.STORAGE_ACCESS_KEY,
+    STORAGE_SECRET_KEY:process.env.STORAGE_SECRET_KEY,
+    STORAGE_BUCKET:process.env.STORAGE_BUCKET,
+    STORAGE_USE_SSL:process.env.STORAGE_USE_SSL,
+}
