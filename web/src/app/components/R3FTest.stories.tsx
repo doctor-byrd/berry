@@ -9,9 +9,6 @@
 //   - Motion: drei <Float> (pure math) + useFrame rotation.
 //   - Interaction: raycasted hover/click handled by R3F pointer events.
 //
-// Storybook glob picks this up automatically (web/.storybook/main.ts), and the
-// custom preview.jsx decorator routes it through "MODE A" (plain React), so
-// Pixi is fully bypassed.
 
 import React, { useMemo, useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
