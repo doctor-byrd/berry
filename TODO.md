@@ -2,7 +2,7 @@ Priority
     - Add Real Time Communications services for `ProsodyIM` & `LiveKit`
     - Build service layer APIs for `PayRam` & `Blnk`
     - Validate auth implemnetation
-    - Determine service that should be used for mini app bundles, recommend using `Ionic Portals` and `CapGo`, Third party developers can build their apps using `Ionic Capcitor`
+    - Determine service that should be used for mini app bundles, recommend using `Ionic Portals` to run apps client side and store and serve app bundles from `MinIO`, Third party developers can build their apps using `Ionic Capcitor`
     
 Non-Priority
     - We have the `@pydantic/monty` library, should implement a scripting engine module in NestJS application
