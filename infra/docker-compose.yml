@@ -249,6 +249,36 @@ services:
       redis:
         condition: service_started
 
+  social-api:
+    image: superseriousbusiness/gotosocial:0.22.3
+    container_name: nx_social_api
+    restart: unless-stopped
+    command: ["node", "/gotosocial/gotosocial", "server", "start"]
+    ports:
+      - "127.0.0.1:8081:8080" # Maps local port 8081 to container port 8080
+    environment:
+      - GTS_HOST=localhost
+      - GTS_PORT=8080
+      - GTS_DB_TYPE=postgres
+      - GTS_DB_ADDRESS=supabase-db
+      - GTS_DB_PORT=5432
+      - GTS_DB_USER=postgres
+      - GTS_DB_PASSWORD=dev_password
+      - GTS_DB_DATABASE=gotosocial_db
+      - GTS_DB_TLS_MODE=disable
+      - GTS_REDIS_ENABLED=true
+      - GTS_REDIS_ADDRESS=redis:6379
+      - GTS_REDIS_PASSWORD=dev_redis_password
+      - GTS_STORAGE_BACKEND=local
+      - GTS_STORAGE_LOCAL_BASE_PATH=/gotosocial/storage
+    volumes:
+      - social_storage:/gotosocial/storage
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
 configs:
   db_init:
     content: |
@@ -256,6 +286,7 @@ configs:
       CREATE DATABASE vendure_db;
       CREATE DATABASE payram_db;
       CREATE DATABASE blnk_db;
+      CREATE DATABASE gotosocial_db;
       CREATE DATABASE prosody_db;
       \c saleor_db;
       CREATE ROLE supabase_admin WITH SUPERUSER LOGIN PASSWORD 'dev_password';
@@ -282,3 +313,4 @@ volumes:
   identity_templates:
   identity_media:
   commerce_media:
+  social_storage:

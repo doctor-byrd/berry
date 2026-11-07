@@ -298,3 +298,55 @@ docker exec -it nx_communication_messaging prosodyctl register admin localhost d
 ```
 - Username: admin@localhost
 - Password: dev_admin_secure_password
+
+### Social
+
+We are using GoToSocial, a headless ActivityPub server based on Mastodon.
+
+API Endpoint `http://localhost:8081`
+
+Example integration:
+```ts
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { createRestVersionedClient, MastoClient } from 'masto';
+
+@Injectable()
+export class SocialApiService implements OnModuleInit {
+  private readonly logger = new Logger(SocialApiService.name);
+  private mastoClient: MastoClient;
+
+  // Configuration properties
+  private readonly url = 'http://localhost:8081';
+  private readonly accessToken = 'YOUR_SAVED_OAUTH_ACCESS_TOKEN';
+
+  onModuleInit() {
+    // Initialize the versioned Mastodon REST client wrapper
+    this.mastoClient = createRestVersionedClient({
+      url: this.url,
+      accessToken: this.accessToken,
+    });
+    this.logger.log('Social API Mastodon client successfully initialized.');
+  }
+
+  /**
+   * Fetch public timelines with native library methods
+   */
+  async getPublicTimeline() {
+    // Accesses GET /api/v1/timelines/public automatically
+    return await this.mastoClient.v1.timelines.public.list({
+      limit: 20,
+    });
+  }
+
+  /**
+   * Publish a status update headlessly with full type safety
+   */
+  async createStatus(statusText: string) {
+    // Accesses POST /api/v1/statuses automatically
+    return await this.mastoClient.v1.statuses.create({
+      status: statusText,
+      visibility: 'public',
+    });
+  }
+}
+```
