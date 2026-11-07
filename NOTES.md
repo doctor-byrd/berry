@@ -226,18 +226,12 @@ OIDC_SCOPES=openid profile email
 
 ### Commerce
 
-Initialize commerce services, here we are using saleor
-```sh
-# Run database migrations
-docker compose run --rm commerce-api python3 manage.py migrate
-# Seed with sample market data
-docker compose run --rm commerce-api python3 manage.py populatedb
-# Generate super admin: dev@email.com | dev_password
-docker compose run --rm commerce-api python3 manage.py createsuperuser
-```
+Initialize commerce services, here we are using Vendure
 
-The GraphQL engine is accessible at `http://localhost:8000/graphql/`
-The Central Admin dashboard is accessible at `http://localhost:9003`
+Access dashboard at `http://localhost:8000/dashboard`
+
+- Default Email: `dev@email.com`
+- Default Password: `dev_password`
 
 ### Finance
 
@@ -245,14 +239,6 @@ In production update the `docker-compose.yml` file
 ```
 BLOCKCHAIN_NETWORK_TYPE=testnet   # Switch to "mainnet" when you deploy live
 ```
-
-To handle traditional payments we leverage Saleor since it already has a Transaction API.
-We use Saleor for processing only traditional deposits and withdrawals. 
-For example, if a person deposits $100 dollars from their bank account to the platform using Stripe via Saleor's Transaction API, we then update the ledger balance for the user's account using Blnk to reflect this deposit.
-Once the platform bank account receives the $100 from Stripe, we can increase the supply on chain for our stablecoin by $100. 
-While the user is within the ecosystem (i.e. buying goods and services from other users) we simply need to adjust the internal ledger balance using Blnk.
-When the user requests a withdrawal to a wallet, we use PayRam to move the funds on chain after updating the ledger balance. If the user requests a withdrawal to their bank account, we use Saleor's Transaction API to send the money using Stripe, update the core ledger, and burn $100 from the total stablecoin supply.
-This allows us to handle both traditional and stablecoin payments.
 
 #### Payram
 

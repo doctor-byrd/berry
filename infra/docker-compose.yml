@@ -108,48 +108,61 @@ services:
         condition: service_started
 
   commerce-api:
-    image: ghcr.io/saleor/saleor:3.20
+    image: martijnfrompinelab/dokploy-vendure-demo:latest
     container_name: nx_commerce_api
     restart: unless-stopped
+    command: npm run start:server
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8000:3000"
     environment:
-      DATABASE_URL: postgres://postgres:dev_password@supabase-db:5432/saleor_db
-      CELERY_BROKER_URL: redis://default:dev_redis_password@redis:6379/1
-      SECRET_KEY: "dev_commerce_secret_key_change_me"
-      ALLOWED_HOSTS: "localhost,127.0.0.1,commerce-api"
+      NODE_ENV: "production"
+      PORT: 3000
+      DB_TYPE: "postgres"
+      DB_HOST: "supabase-db"
+      DB_PORT: 5432
+      DB_NAME: "vendure_db"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "dev_password"
+      SUPERADMIN_USERNAME: "dev@email.com"
+      SUPERADMIN_PASSWORD: "dev_password"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: "dev_redis_password"
+      COOKIE_SECRET: "dev_commerce_secret_key_change_me"
+      VENDURE_HOST: "localhost"
     volumes:
-      - commerce_media:/app/media
+      - commerce_media:/usr/src/app/vendure_files
     depends_on:
       supabase-db:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
 
   commerce-worker:
-    image: ghcr.io/saleor/saleor:3.20
+    image: martijnfrompinelab/dokploy-vendure-demo:latest
     container_name: nx_commerce_worker
     restart: unless-stopped
-    command: celery -A saleor worker --loglevel=info
+    command: npm run start:worker
     environment:
-      DATABASE_URL: postgres://postgres:dev_password@supabase-db:5432/saleor_db
-      CELERY_BROKER_URL: redis://default:dev_redis_password@redis:6379/1
-      SECRET_KEY: "dev_commerce_secret_key_change_me"
-      ALLOWED_HOSTS: "localhost,127.0.0.1,commerce-api"
+      NODE_ENV: "production"
+      DB_TYPE: "postgres"
+      DB_HOST: "supabase-db"
+      DB_PORT: 5432
+      DB_NAME: "vendure_db"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "dev_password"
+      SUPERADMIN_USERNAME: "dev@email.com"
+      SUPERADMIN_PASSWORD: "dev_password"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: "dev_redis_password"
+      COOKIE_SECRET: "dev_commerce_secret_key_change_me"
+      VENDURE_HOST: "localhost"
     volumes:
-      - commerce_media:/app/media
+      - commerce_media:/usr/src/app/vendure_files
     depends_on:
       commerce-api:
         condition: service_started
-
-  commerce-dashboard:
-    image: ghcr.io/saleor/saleor-dashboard:3.23.43
-    container_name: nx_commerce_dashboard
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:9003:80"
-    environment:
-      API_URL: http://localhost:8000/graphql/
 
   finance-ledger:
     image: ghcr.io/blnkfinance/blnk:v0.15.7
@@ -240,7 +253,7 @@ configs:
   db_init:
     content: |
       CREATE DATABASE authentik_db;
-      CREATE DATABASE saleor_db;
+      CREATE DATABASE vendure_db;
       CREATE DATABASE payram_db;
       CREATE DATABASE blnk_db;
       CREATE DATABASE prosody_db;
@@ -265,8 +278,7 @@ volumes:
   supabase_db_data:
   redis_data:
   storage_data:
-  identity_media:
-  identity_templates:
-  commerce_media:
-  finance_ledger_data:
   communication_data:
+  identity_templates:
+  identity_media:
+  commerce_media:
