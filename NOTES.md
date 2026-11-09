@@ -184,11 +184,9 @@ echo 'alias kubectl="minikube kubectl --"' >> ~/.bashrc
 # Reload your terminal settings
 source ~/.bashrc
 
-# Run using docker
+# Run using docker - For extra resources use: minikube start --driver=docker --memory=4096 --cpus=2
 minikube start --driver=docker
 
-# Verify
-minikube status
 kubectl get nodes
 ```
 
@@ -204,7 +202,17 @@ To convert a compose file run:
 kompose convert
 ```
 
-Apply to Kubenetes:
+Spin up the database services and volumes first:
+```sh
+kubectl apply -f db_init-configmap.yaml
+
+kubectl apply -f supabase-db-data-persistentvolumeclaim.yaml
+
+kubectl apply -f supabase-db-deployment.yaml
+kubectl apply -f supabase-db-service.yaml
+```
+
+Apply services to Kubenetes:
 ```sh
 kubectl apply -f .
 ```
@@ -234,6 +242,41 @@ Get service information
 kubectl get svc <service-name>
 ```
 
+Wipe current runtime environment:
+```sh
+# Stop and delete all running pods and services
+kubectl delete deployments --all
+kubectl delete services --all
+
+# Delete the persistent storage volume holding the old database files
+kubectl delete pvc supabase-db-data
+```
+
+Access logs for service:
+```sh
+kubectl logs -f deployment/<service-name>
+```
+
+Run interactive shell:
+```sh
+kubectl exec -it deployment/<service-name> -- /bin/sh
+```
+
+Check virtual machine is active:
+```sh
+minikube status
+```
+
+Spin down cluster safely:
+```sh
+minikube stop
+```
+
+Delete cluster:
+```sh
+minikube delete
+```
+
 #### Nx
 
 See active Nx projects:
@@ -241,30 +284,7 @@ See active Nx projects:
 npx nx show projects
 ```
 
-Spin up containers:
-```sh
-docker compose -f infra/docker-compose.yml up -d
-```
-
-Stop containers:
-```sh
-docker compose -f infra/docker-compose.yml down
-```
-
-Wipe containers:
-```sh
-docker compose -f infra/docker-compose.yml down -v
-```
-
-Check containers:
-```sh
-docker ps
-```
-
-Check logs for container:
-```sh
-docker logs <container-name>
-```
+#### Services
 
 Default PG Admin runs on port `5050`
 - Username: `admin@domain.com`
@@ -329,14 +349,9 @@ In production update the `docker-compose.yml` file
 BLOCKCHAIN_NETWORK_TYPE=testnet   # Switch to "mainnet" when you deploy live
 ```
 
-#### Payram
+#### Bitcart
 
-Set up the master account at `http://localhost:8080/signup`
-- Default Email: dev@email.com
-- Default Password: Dev_P@ssw0rd
-Select `Operator` mode if running a payment platform or marketplace. You will need to set the address that will collect fees and connect a wallet.
-
-Access the dashboard at `http://localhost:8080/dashboard`
+Set up the master account at `http://localhost:8081/`
 
 #### Blnk
 Blnk is headless, you can access data from endpoints such as `http://localhost:5001/ledgers` and `http://localhost:5001/balances`

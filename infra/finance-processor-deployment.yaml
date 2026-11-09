@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: finance-processor
+  name: finance-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: finance-processor
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: finance-processor
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z supabase-db 5432; do echo waiting for postgres; sleep 2; done']
+      containers:
+        - name: bitcart-api
+          image: bitcart/bitcart:latest
+          command: ["gunicorn", "main:app", "-b", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "--threads", "4"]
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          env:
+            - name: BITCART_POSTGRES_HOST
+              value: "supabase-db"
+            - name: BITCART_POSTGRES_PORT
+              value: "5432"
+            - name: BITCART_POSTGRES_DB
+              value: "bitcart_db"
+            - name: BITCART_POSTGRES_USER
+              value: "postgres"
+            - name: BITCART_POSTGRES_PASSWORD
+              value: "dev_password"
+            - name: BITCART_CRYPTOS
+              value: "eth"
+            - name: SERVER_ENV
+              value: "DEVELOPMENT"
+

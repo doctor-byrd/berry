@@ -282,7 +282,6 @@ configs:
       CREATE DATABASE blnk_db;
       CREATE DATABASE gotosocial_db;
       CREATE DATABASE ejabberd_db;
-      \c saleor_db;
       CREATE ROLE supabase_admin WITH SUPERUSER LOGIN PASSWORD 'dev_password';
       CREATE EXTENSION IF NOT EXISTS hstore;
 
