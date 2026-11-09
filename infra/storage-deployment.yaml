@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: storage
+  name: storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: storage
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: storage
+    spec:
+      containers:
+        - args:
+            - server
+            - /data
+            - --console-address
+            - :9001
+          env:
+            - name: MINIO_ROOT_PASSWORD
+              value: storage_secure_password
+            - name: MINIO_ROOT_USER
+              value: storage_admin
+          image: alpine/minio:RELEASE.2025-10-15T17-29-55Z
+          name: local-object-storage
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+            - containerPort: 9001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: storage-data
+      restartPolicy: Always
+      volumes:
+        - name: storage-data
+          persistentVolumeClaim:
+            claimName: storage-data

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: identity-worker
+  name: identity-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: identity-worker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: identity-worker
+    spec:
+      containers:
+        - args:
+            - worker
+          env:
+            - name: AUTHENTIK_ERROR_REPORTING__ENABLED
+              value: "false"
+            - name: AUTHENTIK_POSTGRESQL__HOST
+              value: supabase-db
+            - name: AUTHENTIK_POSTGRESQL__NAME
+              value: authentik_db
+            - name: AUTHENTIK_POSTGRESQL__PASSWORD
+              value: dev_password
+            - name: AUTHENTIK_POSTGRESQL__USER
+              value: postgres
+            - name: AUTHENTIK_REDIS__HOST
+              value: redis
+            - name: AUTHENTIK_REDIS__PASSWORD
+              value: dev_redis_password
+            - name: AUTHENTIK_SECRET_KEY
+              value: dev_identity_secret_key_change_me
+          image: ghcr.io/goauthentik/server:2024.10.3
+          name: nx-identity-worker
+          volumeMounts:
+            - mountPath: /media
+              name: identity-media
+            - mountPath: /templates
+              name: identity-templates
+            - mountPath: /var/run/docker.sock
+              name: docker-socket
+      restartPolicy: Always
+      volumes:
+        - name: identity-media
+          persistentVolumeClaim:
+            claimName: identity-media
+        - name: identity-templates
+          persistentVolumeClaim:
+            claimName: identity-templates
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket

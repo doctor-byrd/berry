@@ -209,6 +209,33 @@ Apply to Kubenetes:
 kubectl apply -f .
 ```
 
+Check running services:
+```sh
+kubectl get pods
+```
+
+Troubleshoot service:
+```sh
+kubectl describe pod <service-name>
+```
+
+Test service:
+```sh
+minikube service <service-name>
+```
+
+Expose services locally (must run continuously):
+```sh
+minikube tunnel
+```
+
+Get service information
+```sh
+kubectl get svc <service-name>
+```
+
+#### Nx
+
 See active Nx projects:
 ```sh
 npx nx show projects

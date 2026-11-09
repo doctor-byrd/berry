@@ -1,0 +1,117 @@
+apiVersion: v1
+data:
+  ejabberd.yml: |
+    hosts:
+      - "localhost"
+
+    loglevel: 3
+    log_rotate_size: 10485760
+    log_rotate_count: 1
+
+    certfiles:
+      - "/home/ejabberd/conf/server.pem"
+
+    # PostgreSQL Global Engine Routing
+    sql_type: pgsql
+    sql_server: "supabase-db"
+    sql_port: 5432
+    sql_database: "ejabberd_db"
+    sql_username: "postgres"
+    sql_password: "dev_password"
+
+    default_db: sql
+    auth_method: sql
+    update_sql_schema: true
+
+    listen:
+      - port: 5222
+        ip: "::"
+        module: ejabberd_c2s
+        starttls: true
+        max_stanza_size: 2048000
+        shaper: c2s_shaper
+        access: c2s
+      - port: 5280
+        ip: "::"
+        module: ejabberd_http
+        request_handlers:
+          /ws: ejabberd_http_ws
+          /bosh: mod_bosh
+          /admin: ejabberd_web_admin
+
+    # Global Speed Caps (Bytes/Sec)
+    shaper:
+      normal: 1000
+      fast: 50000
+
+    # Shaper Mappings
+    shaper_rules:
+      c2s_shaper:
+        - none: admin
+        - normal
+      s2s_shaper:
+        - fast
+
+    acl:
+      admin:
+        user:
+          - "admin@localhost"
+
+    # Pure Authorization Policies (Allow / Deny Only)
+    access_rules:
+      local:
+        - allow: local
+      c2s:
+        - deny: blocked
+        - allow
+      announce:
+        - allow: admin
+
+    modules:
+      mod_adhoc: {}
+      mod_admin_extra: {}
+      mod_announce:
+        access: announce
+      mod_avatar: {}
+      mod_vcard_xupdate: {}
+      mod_bosh: {}
+      mod_caps: {}
+      mod_carboncopy: {}
+      mod_client_state: {}
+      mod_configure: {}
+      mod_disco: {}
+      mod_http_upload:
+        docroot: "/home/ejabberd/upload"
+        put_url: "http://localhost:5280/upload"
+      mod_last: {}
+      mod_mam:
+        assume_mam_usage: true
+        default: always
+      mod_muc:
+        access: muc
+        access_admin: muc_admin
+        access_create: muc_create
+        access_persistent: muc_create
+        default_room_options:
+          mam: true
+          persistent: true
+      mod_offline: {}
+      mod_ping: {}
+      mod_privacy: {}
+      mod_private: {}
+      mod_pubsub:
+        access_createnode: pubsub_createnode
+        plugins:
+          - "flat"
+          - "pep"
+      mod_push: {}
+      mod_roster:
+        versioning: true
+      mod_shared_roster: {}
+      mod_stream_mgmt: {}
+      mod_vcard: {}
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: communication-messaging
+  name: ejabberd-config

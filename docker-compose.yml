@@ -1,3 +1,4 @@
+# DEPRECATED - This docker-compose file is kept purely as a reference for the original services, layer, services have been migrated to Kubernetes, see infra/ directory for current configurations
 services:
   supabase-db:
     image: supabase/postgres:15.6.1.138

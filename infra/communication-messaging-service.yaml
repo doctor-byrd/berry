@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: communication-messaging
+  name: communication-messaging
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "5222"
+      port: 5222
+      targetPort: 5222
+    - name: "5280"
+      port: 5280
+      targetPort: 5280
+  selector:
+    io.kompose.service: communication-messaging

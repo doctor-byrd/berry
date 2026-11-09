@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: finance-ledger
+  name: finance-ledger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: finance-ledger
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: finance-ledger
+    spec:
+      containers:
+        - args:
+            - blnk migrate up && blnk start
+          command:
+            - /bin/sh
+            - -c
+          env:
+            - name: BLNK_DATA_SOURCE_DNS
+              value: postgres://postgres:dev_password@supabase-db:5432/blnk_db?sslmode=disable
+            - name: BLNK_PROJECT_NAME
+              value: Blnk
+            - name: BLNK_REDIS_DNS
+              value: redis://:dev_redis_password@redis:6379
+            - name: BLNK_SERVER_PORT
+              value: "5001"
+            - name: BLNK_SERVER_SECRET_KEY
+              value: dev_ledger_secure_secret_change_me
+            - name: BLNK_SERVER_SECURE
+              value: "false"
+          image: ghcr.io/blnkfinance/blnk:v0.15.7
+          name: nx-finance-ledger
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+      restartPolicy: Always

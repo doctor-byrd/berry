@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: communication-messaging
+  name: communication-messaging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: communication-messaging
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: communication-messaging
+    spec:
+      containers:
+        - image: ejabberd/ecs:26.09
+          name: nx-communication-messaging
+          ports:
+            - containerPort: 5222
+              protocol: TCP
+            - containerPort: 5280
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /home/ejabberd/conf/ejabberd.yml
+              name: ejabberd-config
+              subPath: ejabberd.yml
+            - mountPath: /home/ejabberd/database
+              name: communication-data
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: ejabberd.yml
+                path: ejabberd.yml
+            name: ejabberd-config
+          name: ejabberd-config
+        - name: communication-data
+          persistentVolumeClaim:
+            claimName: communication-data

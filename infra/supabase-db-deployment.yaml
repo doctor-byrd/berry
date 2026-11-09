@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: supabase-db
+  name: supabase-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: supabase-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: supabase-db
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: dev_db
+            - name: POSTGRES_PASSWORD
+              value: dev_password
+            - name: POSTGRES_USER
+              value: postgres
+          image: supabase/postgres:15.6.1.138
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U postgres -d dev_db
+            failureThreshold: 5
+            periodSeconds: 3
+            timeoutSeconds: 3
+          name: nx-supabase-db
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d/init-multiple-dbs.sql
+              name: db-init
+              subPath: init-multiple-dbs.sql
+            - mountPath: /var/lib/postgresql/data
+              name: supabase-db-data
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: init-multiple-dbs.sql
+                path: init-multiple-dbs.sql
+            name: db-init
+          name: db-init
+        - name: supabase-db-data
+          persistentVolumeClaim:
+            claimName: supabase-db-data

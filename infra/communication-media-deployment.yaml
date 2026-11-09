@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: communication-media
+  name: communication-media
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: communication-media
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: communication-media
+    spec:
+      containers:
+        - args:
+            - --config
+            - /local/livekit.yaml
+          env:
+            - name: LIVEKIT_KEYS
+              value: 'dev_media_key_change_me: dev_media_secret_change_me!!32bytes'
+            - name: LIVEKIT_REDIS_HOST
+              value: redis
+            - name: LIVEKIT_REDIS_PASSWORD
+              value: dev_redis_password
+            - name: LIVEKIT_REDIS_PORT
+              value: "6379"
+          image: livekit/livekit-server:v1.13.11
+          name: nx-communication-media
+          ports:
+            - containerPort: 7880
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /local/livekit.yaml
+              name: livekit-config
+              subPath: livekit.yaml
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: livekit.yaml
+                path: livekit.yaml
+            name: livekit-config
+          name: livekit-config

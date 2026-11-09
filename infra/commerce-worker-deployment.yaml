@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: commerce-worker
+  name: commerce-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: commerce-worker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: commerce-worker
+    spec:
+      containers:
+        - args:
+            - npm
+            - run
+            - start:worker
+          env:
+            - name: COOKIE_SECRET
+              value: dev_commerce_secret_key_change_me
+            - name: DB_HOST
+              value: supabase-db
+            - name: DB_NAME
+              value: vendure_db
+            - name: DB_PASSWORD
+              value: dev_password
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_TYPE
+              value: postgres
+            - name: DB_USERNAME
+              value: postgres
+            - name: NODE_ENV
+              value: production
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PASSWORD
+              value: dev_redis_password
+            - name: REDIS_PORT
+              value: "6379"
+            - name: SUPERADMIN_PASSWORD
+              value: dev_password
+            - name: SUPERADMIN_USERNAME
+              value: dev@email.com
+            - name: VENDURE_HOST
+              value: localhost
+          image: martijnfrompinelab/dokploy-vendure-demo:latest
+          name: nx-commerce-worker
+          volumeMounts:
+            - mountPath: /usr/src/app/vendure_files
+              name: commerce-media
+      restartPolicy: Always
+      volumes:
+        - name: commerce-media
+          persistentVolumeClaim:
+            claimName: commerce-media
