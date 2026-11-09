@@ -84,6 +84,7 @@
     "@expo/metro": "~56.0.0",
     "@expo/metro-runtime": "~56.0.14",
     "@expo/vector-icons": "~15.1.0",
+    "@hyperledger/firefly-sdk": "^1.4.0",
     "@ionic/portals-react-native": "^0.9.1",
     "@livekit/react-native": "^3.1.0",
     "@livekit/react-native-webrtc": "^150.1.1",
