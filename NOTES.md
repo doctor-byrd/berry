@@ -147,6 +147,68 @@ nx test-storybook <project-name>
 
 ### Infrastructure
 
+
+#### Docker & Kubernetes
+The following instructions assume you are running on a Debian instance, we will install `Docker` and `K8s`:
+
+Docker
+```sh
+# Update system packages
+sudo apt update && sudo apt upgrade -y
+
+# Install curl and Docker
+sudo apt install curl docker.io -y
+
+# Start and enable the Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Run docker without running sudo everytime
+sudo usermod -aG docker $USER
+```
+
+MiniKube
+```sh
+# Download the latest stable Debian package
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+
+# Install the package using dpkg
+sudo dpkg -i minikube_latest_amd64.deb
+
+# Clean up the downloaded file
+rm minikube_latest_amd64.deb
+
+# Append the alias to your bash configuration file
+echo 'alias kubectl="minikube kubectl --"' >> ~/.bashrc
+
+# Reload your terminal settings
+source ~/.bashrc
+
+# Run using docker
+minikube start --driver=docker
+
+# Verify
+minikube status
+kubectl get nodes
+```
+
+Install `Kompose` to convert docker-compose.yml files to kubernetes configs:
+```sh
+curl -L https://github.com/kubernetes/kompose/releases/download/v1.38.0/kompose-linux-amd64 -o kompose
+chmod +x kompose
+sudo mv ./kompose /usr/local/bin/kompose
+```
+
+To convert a compose file run:
+```sh
+kompose convert
+```
+
+Apply to Kubenetes:
+```sh
+kubectl apply -f .
+```
+
 See active Nx projects:
 ```sh
 npx nx show projects
