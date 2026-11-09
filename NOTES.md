@@ -286,18 +286,19 @@ response = await blnk.Transactions.create({
 
 ### Communications
 
-We are using Prosody for messaging and LiveKit for rich media
+We are using ejabberd for messaging and LiveKit for rich media
 
 LiveKit headless server `http://localhost:7880`
-Prosody Bosh endpoint `https://localhost:5280/http-bind`
-Prosody XMPP Websocket `https://localhost:5280/xmpp-websocket`
+ejabberd admin endpoint `http://localhost:5280/admin`
 
-Create superuser for Prosody:
+Add the superadmin account after the first time starting the server:
 ```sh
-docker exec -it nx_communication_messaging prosodyctl register admin localhost dev_admin_secure_password
+docker exec -it nx_communication_messaging ejabberdctl register admin localhost dev_admin_secure_password
 ```
-- Username: admin@localhost
-- Password: dev_admin_secure_password
+
+- ejabberd admin: admin@localhost
+- ejabberd pass: dev_admin_secure_password
+
 
 ### Social
 
