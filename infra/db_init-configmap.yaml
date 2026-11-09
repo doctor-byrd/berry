@@ -3,7 +3,7 @@ data:
   init-multiple-dbs.sql: |
     CREATE DATABASE authentik_db;
     CREATE DATABASE vendure_db;
-    CREATE DATABASE bitcart_db;
+    CREATE DATABASE firefly_db;
     CREATE DATABASE blnk_db;
     CREATE DATABASE gotosocial_db;
     CREATE DATABASE ejabberd_db;

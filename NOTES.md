@@ -184,7 +184,7 @@ echo 'alias kubectl="minikube kubectl --"' >> ~/.bashrc
 # Reload your terminal settings
 source ~/.bashrc
 
-# Run using docker - For extra resources use: minikube start --driver=docker --memory=4096 --cpus=2
+# Run using docker - For extra resources use: minikube start --driver=docker --cpus 4 --memory 8192
 minikube start --driver=docker
 
 kubectl get nodes
@@ -255,6 +255,11 @@ kubectl delete pvc supabase-db-data
 Access logs for service:
 ```sh
 kubectl logs -f deployment/<service-name>
+```
+
+Restart service:
+```sh
+kubectl rollout restart deployment/<service-name>
 ```
 
 Run interactive shell:
@@ -349,9 +354,18 @@ In production update the `docker-compose.yml` file
 BLOCKCHAIN_NETWORK_TYPE=testnet   # Switch to "mainnet" when you deploy live
 ```
 
-#### Bitcart
+#### FireFly
 
-Set up the master account at `http://localhost:8081/`
+FireFly requires setting the appropriate configurations set in the `firefly-configmap.yaml` file.
+We will need to set the RPC URL for an Ethereum compatible chain, and for the IPFS API and Gateway. By default they are set as follows:
+
+```
+ETH RPC URL: http://localhost:8545
+IPFS RPC URL: http://localhost:5001
+IPFS Gateway URL: http://localhost:8080
+```
+
+The FireFly REST API runs on http://localhost:8000
 
 #### Blnk
 Blnk is headless, you can access data from endpoints such as `http://localhost:5001/ledgers` and `http://localhost:5001/balances`

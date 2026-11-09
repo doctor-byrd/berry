@@ -1,6 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.38.0 (a8f5d1cbd)
   labels:
     io.kompose.service: finance-processor
   name: finance-processor
@@ -9,10 +12,11 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: finance-processor
-  strategy:
-    type: Recreate
   template:
     metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.38.0 (a8f5d1cbd)
       labels:
         io.kompose.service: finance-processor
     spec:
@@ -21,25 +25,26 @@ spec:
           image: busybox:1.36
           command: ['sh', '-c', 'until nc -z supabase-db 5432; do echo waiting for postgres; sleep 2; done']
       containers:
-        - name: bitcart-api
-          image: bitcart/bitcart:latest
-          command: ["gunicorn", "main:app", "-b", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "--threads", "4"]
+        - name: finance-processor
+          image: ghcr.io/hyperledger-firefly/firefly:v1.5.0-20260916-863
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - migrate -path /firefly/db/migrations/postgres -database "$DATABASE_URL" up && firefly -f /config/firefly.yaml
+          env:
+            - name: DATABASE_URL
+              value: "postgres://postgres:dev_password@supabase-db:5432/firefly_db?sslmode=disable"
           ports:
             - containerPort: 8000
               protocol: TCP
-          env:
-            - name: BITCART_POSTGRES_HOST
-              value: "supabase-db"
-            - name: BITCART_POSTGRES_PORT
-              value: "5432"
-            - name: BITCART_POSTGRES_DB
-              value: "bitcart_db"
-            - name: BITCART_POSTGRES_USER
-              value: "postgres"
-            - name: BITCART_POSTGRES_PASSWORD
-              value: "dev_password"
-            - name: BITCART_CRYPTOS
-              value: "eth"
-            - name: SERVER_ENV
-              value: "DEVELOPMENT"
-
+            - containerPort: 8081
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: firefly-core-config
+      restartPolicy: Always

@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firefly-core-config
+  labels:
+    io.kompose.service: finance-processor
+data:
+  firefly.yaml: |
+    log:
+      level: info
+    http:
+      port: 8000
+      address: 0.0.0.0
+    admin:
+      port: 8081
+      address: 0.0.0.0
+
+    plugins:
+      database:
+        - name: database0
+          type: postgres
+          postgres:
+            url: "postgres://postgres:dev_password@supabase-db:5432/firefly_db?sslmode=disable"
+      blockchain:
+        - name: blockchain0
+          type: ethereum
+          ethereum:
+            ethconnect:
+              url: "http://localhost:8545"
+              topic: "default"
+      sharedstorage:
+        - name: sharedstorage0
+          type: ipfs
+          ipfs:
+            api:
+              url: "http://localhost:5001"
+            gateway:
+              url: "http://localhost:8080"
+
+    namespaces:
+      default: default
+      predefined:
+        - name: default
+          description: "Primary Local Namespace"
+          type: local
+          plugins:
+            - database0
+            - blockchain0
+            - sharedstorage0
+          publicidentity:
+            identity: "org_0"
+            claim:
+              config:
+                key: "0x0000000000000000000000000000000000000000"
