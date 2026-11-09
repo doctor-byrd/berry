@@ -382,7 +382,8 @@ ejabberd admin endpoint `http://localhost:5280/admin`
 
 Add the superadmin account after the first time starting the server:
 ```sh
-docker exec -it nx_communication_messaging ejabberdctl register admin localhost dev_admin_secure_password
+# docker exec -it nx_communication_messaging ejabberdctl register admin localhost dev_admin_secure_password
+kubectl exec -it deployment/communication-messaging -- ejabberdctl register admin localhost dev_admin_secure_password
 ```
 
 - ejabberd admin: admin@localhost
