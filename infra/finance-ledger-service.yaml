@@ -8,6 +8,7 @@ metadata:
     io.kompose.service: finance-ledger
   name: finance-ledger
 spec:
+  type: LoadBalancer
   ports:
     - name: "5001"
       port: 5001

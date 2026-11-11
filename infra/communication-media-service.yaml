@@ -8,6 +8,7 @@ metadata:
     io.kompose.service: communication-media
   name: communication-media
 spec:
+  type: LoadBalancer
   ports:
     - name: "7880"
       port: 7880
