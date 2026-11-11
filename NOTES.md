@@ -349,10 +349,7 @@ Access dashboard at `http://localhost:8000/dashboard`
 
 ### Finance
 
-In production update the `docker-compose.yml` file
-```
-BLOCKCHAIN_NETWORK_TYPE=testnet   # Switch to "mainnet" when you deploy live
-```
+We have configured Hyperledger `Besu` to act as a sandbox environment, in production you can either deploy the infrastructure as is if you need a private blockchain or more likely you can update the services to point the mainnet of your preferred change.
 
 #### FireFly
 
