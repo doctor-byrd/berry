@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ethereum-service
+  labels:
+    app: besu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: besu
+  template:
+    metadata:
+      labels:
+        app: besu
+    spec:
+      containers:
+      - name: besu
+        image: hyperledger/besu:26.11.0
+        command: ["besu"]
+        args:
+        - "--genesis-file=/etc/besu/genesis.json"
+        - "--node-private-key-file=/etc/besu/node_key"
+        - "--rpc-http-enabled"
+        - "--rpc-http-host=0.0.0.0"
+        - "--rpc-http-cors-origins=*"
+        - "--rpc-http-api=ETH,NET,WEB3,QBFT"
+        - "--host-allowlist=*"
+        - "--data-path=/tmp/besu-data"
+        ports:
+        - containerPort: 8545
+          name: json-rpc
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/besu
+      volumes:
+      - name: config-volume
+        configMap:
+          name: ethereum-genesis-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ethereum-service
+spec:
+  selector:
+    app: besu
+  ports:
+    - protocol: TCP
+      port: 8545
+      targetPort: 8545
+  type: ClusterIP

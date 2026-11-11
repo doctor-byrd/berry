@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-connector
+  labels:
+    app: finance-connector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-connector
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: finance-connector
+    spec:
+      containers:
+        - name: evmconnect
+          image: ghcr.io/hyperledger/firefly-evmconnect:v1.4.3
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "
+              log:
+                level: info
+              api:
+                port: 8080
+                address: 0.0.0.0
+              connector:
+                url: http://ethereum-service:8545
+              persistence:
+                type: leveldb
+                leveldb:
+                  path: /tmp/evm_persistence
+              " > /tmp/firefly.evmconnect.yaml && \
+              evmconnect -f /tmp/firefly.evmconnect.yaml
+          ports:
+            - containerPort: 8080
+              name: api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-connector
+spec:
+  selector:
+    app: finance-connector
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

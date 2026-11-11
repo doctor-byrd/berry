@@ -26,7 +26,7 @@ data:
           type: ethereum
           ethereum:
             ethconnect:
-              url: "http://localhost:8545"
+              url: "http://finance-connector:8080"
               topic: "default"
       sharedstorage:
         - name: sharedstorage0
