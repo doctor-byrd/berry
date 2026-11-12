@@ -89,11 +89,10 @@ Existing `server/src/auth` (Authentik OIDC passport strategy) becomes the guard 
 
 ---
 
-## 4. Event Backbone (Redis Streams)
+## 4. Event Backbone
 
-Confirmed choice: **Redis Streams with consumer groups** for durable domain events
-(at-least-once, PEL, replay). BullMQ (already used) remains for scheduled/retryable jobs.
-No Kafka/NATS in v1 — Redis is already deployed (`infra/redis-deployment.yaml`).
+BullMQ used for scheduled/retryable jobs. 
+Redis & NATS are already deployed
 
 Conventions:
 

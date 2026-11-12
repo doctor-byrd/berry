@@ -90,7 +90,7 @@ as bigint string/numeric). Never floats. Currency + scale stored alongside.
 
 ---
 
-## 3. Event Surface (Redis Streams, per Identity conventions)
+## 3. Event Surface (NATS, per Identity conventions)
 
 Stream: `events:finance`. Outbox pattern identical to Identity (write event row in the
 same Postgres transaction as the state change; publisher drains to stream).

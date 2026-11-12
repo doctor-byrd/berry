@@ -4,7 +4,7 @@ Depends on: `Sdk-Architecture.md`
 
 Core technology: GoToSocial (ActivityPub server)
 Composed by: Top-level SDK (@superapp/sdk) → SocialContract
-Depends on: Identity (provisioning saga, identity mapping), Communications (media reuse), Infra (Redis Streams, Postgres, MinIO)
+Depends on: Identity (provisioning saga, identity mapping), Communications (media reuse), Infra (NATS, Postgres, MinIO)
 
 ---
 
@@ -49,7 +49,7 @@ Nest holds the GTS admin token (single system credential, per shared decision). 
 
 ## 4. Event Model
 
-Streams (Redis Streams, consumer groups, outbox-published):
+Streams (NATS, consumer groups, outbox-published):
 
 Buyer-facing (read path is BFF-cached, short TTL):
 

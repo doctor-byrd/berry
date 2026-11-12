@@ -5,7 +5,7 @@ Depends on: `Sdk-Architecture.md`, `Identity.md`
 Scope: real-time messaging (1:1 and group chat), voice/video calls, and media sharing. 
 Core technologies: **ejabberd** (XMPP messaging, MAM for history) and **LiveKit** (WebRTC media/real-time sessions). 
 
-Guiding constraint: **v1 pragmatism** — reuse existing infra (Supabase Postgres, Redis Streams/BullMQ, MinIO). The data plane (actual messages/media) flows directly between the mobile client and ejabberd/LiveKit, but the control plane (provisioning, token minting, metadata, moderation) is strictly governed by the Nest BFF.
+Guiding constraint: **v1 pragmatism** — reuse existing infra (Supabase Postgres, NATS/BullMQ, MinIO). The data plane (actual messages/media) flows directly between the mobile client and ejabberd/LiveKit, but the control plane (provisioning, token minting, metadata, moderation) is strictly governed by the Nest BFF.
 
 ---
 
@@ -45,7 +45,7 @@ Communications-owned tables (schema prefix `comm_`):
 
 ---
 
-## 3. Event Surface (Redis Streams)
+## 3. Event Surface (NATS)
 
 Stream: `events:communications`. Uses the same Outbox pattern as Identity and Finance.
 

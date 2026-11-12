@@ -73,7 +73,7 @@ Consequences and rules:
 
 ## 3. Provisioning a seller (event-driven, reuses Identity machinery)
 
-Seller onboarding is a saga on the same Redis Streams + BullMQ + outbox foundation as
+Seller onboarding is a saga on the same NATS + BullMQ + outbox foundation as
 Identity provisioning. No new broker, no new job system.
 
 ```
@@ -209,7 +209,7 @@ Open items (agreed to defer):
 
 ---
 
-## 8. Events (Redis Streams; naming consistent with Identity/Finance)
+## 8. Events (NATS; naming consistent with Identity/Finance)
 
 Producer streams (outbox-published):
 `commerce.seller.provisioned|failed`, `commerce.order.placed`, `commerce.order.fulfilled`,

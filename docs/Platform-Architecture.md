@@ -49,7 +49,6 @@ In v1, all domains share a single self-hosted Supabase Postgres instance, Falkor
   - **Purpose-built for event streaming**: NATS is optimized for high-throughput, low-latency message delivery
   - **Clean separation of concerns**: FalkorDB focuses on caching/sessions; NATS handles events
   - **Lightweight operational overhead**: NATS is ~15MB, easy to deploy and monitor
-  - **Avoids painful migration**: Starting with NATS prevents the need to migrate from Redis Streams later when scale demands it
 
 ### 2.3 Cache & Session Layer (FalkorDB)
 *Architectural Decision:* In v1, FalkorDB is used purely as a standard, RESP-compatible Redis instance for caching, sessions, and coordination primitives.
