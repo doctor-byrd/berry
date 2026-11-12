@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: broker-service
+  name: broker-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: broker-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: broker-service
+    spec:
+      containers:
+        - name: nats-broker
+          image: nats:2-alpine
+          args:
+            - "-js"
+            - "-sd"
+            - "/data"
+            - "-m"
+            - "8222"
+          ports:
+            - name: client
+              containerPort: 4222
+              protocol: TCP
+            - name: monitor
+              containerPort: 8222
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: broker-data
+      restartPolicy: Always
+      volumes:
+        - name: broker-data
+          persistentVolumeClaim:
+            claimName: broker-data

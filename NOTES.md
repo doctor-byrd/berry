@@ -307,6 +307,12 @@ Default Object Storage Admin runs on port `9001`
 
 Nest application assumes default bucket `hub-assets` exists so be sure to create it in Object Storage Admin interface before uploading assets.
 
+### Broker
+We are using `NATS`
+
+Server: `localhost:4222`
+Dashboard: `http://localhost:8222`
+
 ### Identity
 
 The following configurations assume use for internal services

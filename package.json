@@ -88,6 +88,8 @@
     "@ionic/portals-react-native": "^0.9.1",
     "@livekit/react-native": "^3.1.0",
     "@livekit/react-native-webrtc": "^150.1.1",
+    "@nats-io/jetstream": "^3.4.0",
+    "@nats-io/transport-node": "^3.4.0",
     "@nestjs/bullmq": "^11.0.5",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.4",
