@@ -7,19 +7,19 @@ typed, domain-isolated abstraction layer. Each business domain becomes a standal
 TypeScript library; a top-level SDK composes them into one client surface.
 
 ```
-mobile app ──HTTP/WS──▶ Nest BFF ──▶ domain adapters ──▶ k8s services
-                                     (libs/domain/*)      (infra/*.yaml)
+mobile app (TanStack Query) ──HTTP/WS──▶ Nest BFF ──▶ domain adapters ──▶ k8s services
+                                        (libs/domain/*)      (infra/*.yaml)
 ```
 
 ## Domains & Downstream Mapping
 
 | Domain          | Lib                       | BFF Module                 | Downstream k8s services (infra/)                                   |
 |-----------------|---------------------------|----------------------------|--------------------------------------------------------------------|
-| Identity        | @project/domain-identity  | DomainIdentityModule       | identity-server, identity-worker, Authentik                        |
-| Finance         | @project/domain-finance   | DomainFinanceModule        | finance-ledger, finance-processor, finance-connector, FireFly/Besu, ethereum |
-| Commerce        | @project/domain-commerce  | DomainCommerceModule       | commerce-api, commerce-worker, Vendure, commerce-media             |
-| Social          | @project/domain-social    | DomainSocialModule         | social-api, GoToSocial, social-storage                             |
-| Communications  | @project/domain-communications | DomainCommunicationsModule | communication-messaging, communication-media, ejabberd, LiveKit |
+| Identity        | `@superapp/domain-identity`  | DomainIdentityModule       | identity-server, identity-worker, Authentik                        |
+| Finance         | `@superapp/domain-finance`   | DomainFinanceModule        | finance-ledger, finance-processor, finance-connector, FireFly/Besu, ethereum |
+| Commerce        | `@superapp/domain-commerce`  | DomainCommerceModule       | commerce-api, commerce-worker, Vendure, commerce-media             |
+| Social          | `@superapp/domain-social`    | DomainSocialModule         | social-api, GoToSocial, social-storage                             |
+| Communications  | `@superapp/domain-communications` | DomainCommunicationsModule | communication-messaging, communication-media, ejabberd, LiveKit |
 
 Shared substrate (Supabase Postgres, Redis, MinIO) stays in `server/src/core` /
 `storage` / `adapters` — domains depend on it, never duplicate it.
@@ -34,11 +34,11 @@ libs/domain/identity/
 ├── project.json               # @nx/js lib
 ├── src/
 │   ├── index.ts               # public API barrel
-│   ├── types/                 # DTOs (re-exported from @project/shared-types where applicable)
+│   ├── types/                 # DTOs (Zod schemas for client validation + TS type inference)
 │   │   └── identity.dto.ts
 │   ├── contracts/             # THE key piece: interface describing the domain capability
 │   │   └── identity.contract.ts
-│   └── client/                # HTTP implementation of the contract (fetch-based)
+│   └── client/                # Thin, hand-written HTTP implementation of the contract
 │       └── identity-client.ts
 ```
 
@@ -52,7 +52,7 @@ implementation calls it over HTTP. This gives us:
 2. Ability to swap implementations (mocks in tests, direct service calls in monolith mode).
 3. A stable boundary so domain teams evolve internals without breaking consumers.
 
-## Top-Level SDK: `@project/sdk` (libs/sdk)
+## Top-Level SDK: `@superapp/sdk` (libs/sdk)
 
 ```ts
 const client = createClient({ baseUrl, getToken, wsUrl? });
@@ -63,9 +63,14 @@ client.social.feed();
 client.communications.conversations();
 ```
 
-- Re-exports the five domain clients with shared config (auth headers, retries, error model).
+- Re-exports the five domain clients with shared config (auth headers, normalized `SdkError`).
+- **TanStack Query Alignment**: Domain clients expose simple, Promise-returning methods 
+  (e.g., `() => Promise<WalletSummary>`). They do *not* implement caching or complex retries. 
+  The mobile app wraps these methods in `useQuery`/`useMutation` hooks, leveraging TanStack 
+  Query for caching, deduplication, and component-level retries.
 - Shared `HttpClient` core (in `libs/sdk-core`): JWT bearer injection via `getToken()`,
-  refresh hook on 401, Zod validation at runtime boundaries, normalized `SdkError`.
+  **401 refresh queueing** (pauses concurrent requests while refreshing, then replays), 
+  Zod validation at runtime boundaries, and normalized `SdkError` throwing.
 - Optional realtime channel (Socket.IO/WebSocket) namespaced per domain.
 
 ## BFF Surface in Nest
@@ -83,6 +88,10 @@ server/src/domain/
 
 - Controllers implement the domain contracts, delegate to existing services
   (auth, users, storage, adapters) or downstream HTTP calls into cluster services.
+- **Validation Strategy (Hybrid)**: Nest BFF uses `class-validator` (and `class-transformer`) 
+  for incoming request validation. Shared Zod schemas in `libs/domain/*/types` are used for 
+  outgoing response validation and mobile client-side parsing. A CI step ensures the Nest 
+  OpenAPI/Swagger spec remains synchronized with the shared Zod schemas.
 - Global prefix `v1`; versioning lives at the BFF edge so downstream services stay free to change.
 - Auth guard (passport-jwt / Authentik OIDC) applied at the BFF; domains assume an
   authenticated principal (`req.user`) and enforce per-domain authorization policies.
@@ -96,7 +105,8 @@ type ApiResult<T> = { ok: true; data: T } | { ok: false; error: SdkError };
 interface SdkError { code: string; message: string; details?: unknown; requestId?: string }
 ```
 
-- Nest exception filter emits this shape; SDK throws typed `SdkError`.
+- Nest exception filter emits this shape; SDK throws typed `SdkError` (which TanStack Query 
+  can easily catch in `onError` handlers).
 - `requestId` correlation header (`x-request-id`) threaded through BFF → downstream.
 
 ## Config / Env
@@ -109,21 +119,22 @@ interface SdkError { code: string; message: string; details?: unknown; requestId
 
 ## Build & DX
 
-- Path aliases added to `tsconfig.base.json` (`@project/domain-*`, `@project/sdk`, `@project/sdk-core`).
+- Path aliases added to `tsconfig.base.json` (`@superapp/domain-*`, `@superapp/sdk`, `@superapp/sdk-core`).
 - Contract conformance tests: jest suite asserting each Nest controller satisfies its contract
   (type-level check + runtime route tests).
+
+## Resolved Architectural Decisions
+
+1. **Naming Scope**: `@superapp/*` is used universally to prevent npm namespace collisions and clearly delineate internal platform packages.
+2. **Runtime Validation**: Hybrid approach. Nest BFF uses `class-validator` for incoming requests. Shared libs use Zod for client-side runtime validation and TS type inference. CI enforces OpenAPI/Zod sync.
+3. **HTTP Client**: Hand-written, thin fetch clients that return Promises. Designed explicitly to be wrapped by TanStack Query (`useQuery`/`useMutation`), avoiding bloated auto-generated SDK caching layers.
+4. **Auth Flow**: Mobile uses `expo-auth-session` for OIDC redirect to Authentik. App sends the resulting code to the BFF. BFF exchanges it server-to-server, upserts the local user, and returns a **Nest-signed short-lived JWT** + refresh token.
+5. **Versioning**: Lockstep `/v1` prefix at the public BFF edge to simplify mobile routing and testing. Internal domain contracts and Redis Stream event envelopes carry their own explicit `"version": 1` fields for internal evolution.
 
 ## Rollout Plan
 
 1. **Phase 0** — Scaffold `libs/domain/*` (5 libs) + `libs/sdk-core` + `libs/sdk`; wire tsconfig paths; CI build green.
-2. **Phase 1** — Identity vertical slice: contract → BFF controller wrapping existing auth/users → fetch client → SDK wiring → mobile login uses `client.identity.*`.
+2. **Phase 1** — Identity vertical slice: contract → BFF controller wrapping existing auth/users → fetch client → SDK wiring → mobile login uses `client.identity.*` via TanStack Query.
 3. **Phase 2** — Remaining domains in priority order (Finance → Commerce → Communications → Social), each following the identity template.
 4. **Phase 3** — Realtime channels, pagination/filter conventions, idempotency keys for finance mutations, mini-app sandbox hooks.
 
-## Open Decisions
-
-1. Naming scope: `@project/*` vs org package name? (Placeholders used.)
-2. Runtime validation: keep Zod at SDK boundaries, or generate DTO validators from OpenAPI/Swagger emitted by Nest?
-3. Should domain libs ship only contracts+types to mobile with HTTP clients auto-generated from Nest's Swagger, or hand-written fetch clients as proposed above?
-4. Auth flow in mobile: full OIDC redirect via expo-auth-session against Authentik, with the BFF issuing its own short-lived JWTs? (Recommended.)
-5. Version per-domain (`/v1/finance` independently) or lockstep the whole BFF at `/v1`? (Recommend lockstep v1 now, per-domain opt-in later.)
