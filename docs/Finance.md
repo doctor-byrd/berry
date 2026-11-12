@@ -5,7 +5,7 @@ Depends on: `Sdk-Architecture.md`
 Scope: payments and money movement for the super app — user wallets, balances, P2P and
 merchant payments (QR), internal transfers, and on-chain stablecoin settlement.
 
-Core technologies: **Blnk** (authoritative ledger of record) and **Hyperledger Firefly III**
+Core technologies: **Blnk** (authoritative ledger of record) and **Hyperledger Firefly**
 (blockchain/orchestration rail to an EVM chain). Dev chain: Besu; production: any
 EVM-compatible chain. Asset scope v1: **stablecoins only** (one or a small allowlist), not
 general crypto/DeFi.
@@ -23,7 +23,7 @@ The Finance domain owns:
 1. **Ledger of record** — Blnk holds wallets, balances, and double-entry transaction
    history for every user and merchant account in the ecosystem. *Blnk is authoritative
    for "how much does user X have".* Nothing else is queried for balances.
-2. **Settlement rail** — Firefly III + connectors move value on/off chain (deposits,
+2. **Settlement rail** — Firefly + connectors move value on/off chain (deposits,
    withdrawals, treasury sweeps). *Firefly is authoritative for "what is on chain".*
 3. **Payment intents** — QR-based P2P and merchant payment flows, invoices, and the
    reserve→capture saga consumed by Commerce.

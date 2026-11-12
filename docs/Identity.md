@@ -234,5 +234,5 @@ wrapper) + outbox drain job — built once here, used by all five domains.
 6. **P1** — Authentik webhook ingestion; provisioning-status endpoint + feature gating hook.
 7. **P2** — Deletion saga + scheduled grace-period jobs; dead-letter alerting; refresh-reuse detection.
 
-Out of scope for v1 (agreed): passkeys/social IdPs, device-bound tokens, NATS/Kafka migration,
+Out of scope for v1: passkeys/social IdPs, device-bound tokens, NATS/Kafka migration,
 per-user downstream OAuth linkage, cross-domain identity federation beyond internal id.
