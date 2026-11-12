@@ -177,7 +177,7 @@ Requested semantics: **soft delete + cascading deletes**, GDPR-ish timeline.
 
 ---
 
-## 7. SDK Contract (`@project/domain-identity`)
+## 7. SDK Contract
 
 Framework-free TS lib per `docs/sdk-architecture.md`; Nest controller implements parity.
 
@@ -222,7 +222,7 @@ wrapper) + outbox drain job — built once here, used by all five domains.
 
 ---
 
-## 9. Roadmap (small steps, v1)
+## 9. Roadmap
 
 1. **P0** — `EventBusService` + outbox tables + envelope types in `core` (testable with fakeredis).
 2. **P0** — Lib scaffold `libs/domain/identity` (types/contract/client) + `sdk-core` HTTP client.

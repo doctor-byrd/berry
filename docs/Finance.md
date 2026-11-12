@@ -1,6 +1,6 @@
-# Finance Domain — Architecture & Implementation Plan
+# Finance Domain — Architecture & Implementation Plan - DRAFT v 1.0 (SUBJECT TO CHANGE NOT FINAL)
 
-Status: **Agreed (v1)** · Owner: platform · Depends on: `docs/sdk-architecture.md`, `docs/domains/identity.md`
+Depends on: `Sdk-Architecture.md`
 
 Scope: payments and money movement for the super app — user wallets, balances, P2P and
 merchant payments (QR), internal transfers, and on-chain stablecoin settlement.
@@ -266,7 +266,7 @@ timeout-release. Refunds = new opposite-direction ledger entries (never deletion
 
 ---
 
-## 10. Security & Compliance Notes (v1 minimum)
+## 10. Security & Compliance Notes
 
 - All system credentials in k8s Secrets; mounted env only for Nest pods.
 - Per-transfer velocity limits stored in DB config (max amount/day) — cheap fraud brake.
