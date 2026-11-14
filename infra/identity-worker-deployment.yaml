@@ -49,8 +49,6 @@ spec:
               name: identity-media
             - mountPath: /templates
               name: identity-templates
-            - mountPath: /var/run/docker.sock
-              name: docker-socket
       restartPolicy: Always
       volumes:
         - name: identity-media
@@ -59,7 +57,3 @@ spec:
         - name: identity-templates
           persistentVolumeClaim:
             claimName: identity-templates
-        - name: docker-socket
-          hostPath:
-            path: /var/run/docker.sock
-            type: Socket
