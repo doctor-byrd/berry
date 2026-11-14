@@ -2,6 +2,7 @@ export const environment = {
     ENVIRONMENT:process.env.ENVIRONMENT,
     DATABASE_URL:process.env.DATABASE_URL,
     REDIS_URL:process.env.REDIS_URL,
+    NATS_URL:process.env.NATS_URL,
     JWT_SECRET:process.env.JWT_SECRET,
     VAULT_ROOT_KEY:process.env.VAULT_ROOT_KEY,
     STORAGE_ENDPOINT:process.env.STORAGE_ENDPOINT,

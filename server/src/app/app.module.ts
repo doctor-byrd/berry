@@ -10,14 +10,15 @@ import { ConfigService } from '@nestjs/config';
 import { getBullConfig } from '../common/bull.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { DataSource } from 'typeorm';
+import { CoreJobActions } from '@project/shared-types';
 import { environment } from '../common/environment';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { CoreModule } from '../core/core.module';
 import { StorageModule } from '../storage/storage.module';
 import { CacheTTLDefaultOptions, DatabaseOptions, RateLimitDefaultOptions } from '../common/general';
-import { CoreJobActions } from '@project/shared-types';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { CoreJobActions } from '@project/shared-types';
       isGlobal: true,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
+      useFactory: async () => {
         const redisUrl = environment.REDIS_URL; 
         return {
           stores: [
@@ -37,6 +38,20 @@ import { CoreJobActions } from '@project/shared-types';
         };
       },
     }),
+    // NATS Client Configurations
+    ClientsModule.registerAsync([
+      {
+        name: 'NATS_SERVICE',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: () => ({
+          transport: Transport.NATS,
+          options: {
+            servers: [environment.NATS_URL],
+          },
+        }),
+      },
+    ]),
     // BullMQ Module & Configurations
     BullModule.forRootAsync({
       imports: [ConfigModule],

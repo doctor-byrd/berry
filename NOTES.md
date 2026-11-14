@@ -313,6 +313,85 @@ We are using `NATS`
 Server: `localhost:4222`
 Dashboard: `http://localhost:8222`
 
+Example of receiving messages:
+```ts
+import { Controller } from '@nestjs/common';
+import { MessagePattern, EventPattern, Payload } from '@nestjs/microservices';
+
+@Controller()
+export class OrderController {
+
+  // A. RECEIVE AN EVENT (Fire-and-forget, no response expected)
+  @EventPattern('inventory.low')
+  handleLowInventory(@Payload() data: { itemId: string; stock: number }) {
+    console.log(`Received NATS event: Item ${data.itemId} is low on stock (${data.stock}).`);
+    // Run background logic here...
+  }
+
+  // B. RECEIVE A REQUEST (Expects a return value sent back to the caller)
+  @MessagePattern('orders.get_status')
+  handleGetOrderStatus(@Payload() data: { orderId: string }) {
+    console.log(`Received NATS request for order status: ${data.orderId}`);
+    
+    // Whatever you return here is automatically sent back over NATS to the requester
+    return { orderId: data.orderId, status: 'SHIPPED', updatedAt: new Date() };
+  }
+}
+```
+
+Example of sending messages:
+```ts
+import { Injectable, Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+
+@Injectable()
+export class OrderService {
+  // Inject the NATS client proxy using your exact string token
+  constructor(@Inject('NATS_SERVICE') private readonly natsClient: ClientProxy) {}
+
+  // A. SEND AN EVENT (Fire-and-forget)
+  async notifyPaymentSuccess(orderId: string) {
+    const payload = { orderId, amount: 99.99, timestamp: Date.now() };
+    
+    // .emit() publishes the message immediately without waiting for a reply
+    this.natsClient.emit('payment.processed', payload);
+    console.log('Fired event to NATS subject "payment.processed"');
+  }
+
+  // B. SEND A REQUEST (Waiting for a response)
+  async fetchShippingRates(zipCode: string) {
+    const payload = { destination: zipCode };
+
+    // .send() returns an RxJS Observable. 
+    // We wrap it in firstValueFrom() to convert it into a standard async/await Promise.
+    try {
+      console.log('Sending request to NATS subject "shipping.calculate"...');
+      const response = await firstValueFrom(
+        this.natsClient.send('shipping.calculate', payload)
+      );
+      
+      return response; // Contains the response sent back by the other microservice
+    } catch (error) {
+      console.error('Failed to get response from NATS service:', error);
+      throw error;
+    }
+  }
+}
+```
+
+Based on the current version of Nest (v11) we will access JetStream features using our `JetstreamService` exported from the `core` module:
+```ts
+// In constructor
+constructor(private readonly jetStream: JetStreamService) {}
+
+// Publishing an auth event
+await this.jetStream.publish('app.auth.user_logged_in', { userId: 123 });
+// Publishing a background storage event 
+await this.jetStream.publish('app.storage.file_uploaded', { assetId: 'xyz' });
+
+```
+
 ### Identity
 
 The following configurations assume use for internal services

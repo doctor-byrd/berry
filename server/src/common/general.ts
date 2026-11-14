@@ -1,4 +1,5 @@
 import { environment } from "./environment";
+import { RetentionPolicy } from 'nats';
 
 // Database options
 export enum DatabaseOptions {
@@ -43,6 +44,14 @@ export enum RateLimitDefaultOptions {
 // Default Redis TTL options
 export enum CacheTTLDefaultOptions {
     ONE_MINUTE = 60000,
+}
+
+// Default NATS Jetstream options
+export const GeneralAppStreamConfig = {
+      name: 'APP_STREAM',                 // A non-business specific generic stream name
+      subjects: ['app.>'],                // Matches any topic starting with "app." (e.g., app.users, app.logs)
+      retention: RetentionPolicy.Limits,  // Keeps messages based on limit thresholds [2]
+      max_msgs: 1000000,              // Retains the last one million records before purging old data [2]
 }
 
 // Define auth options

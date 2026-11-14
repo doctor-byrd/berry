@@ -9,6 +9,8 @@ import { AppModule } from './app/app.module';
 import { updateGlobalConfig } from 'nestjs-paginate';
 import { PaginationOptions } from './common/general';
 import { RedisIoAdapter } from './adapters/redis.adapter';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
+import { environment } from './common/environment';
 
 // Global pagination configurations
 updateGlobalConfig({
@@ -23,16 +25,28 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
 
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }));
+
   // Initialize and connect to Redis
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
 
+  // Initialize and connect to NATS as a microservice listener
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.NATS,
+    options: {
+      servers: [environment.NATS_URL],
+    },
+  });
+
+  // Start the microservice listener layer
+  await app.startAllMicroservices();
+
   // Additional configurations
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

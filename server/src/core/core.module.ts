@@ -7,6 +7,7 @@ import { NotificationGateway } from './notification.gateway';
 import { NotificationProcessor } from './notification.processor';
 import { EncryptionService } from './encryption.service';
 import { BullModule } from '@nestjs/bullmq';
+import { JetStreamService } from './jetsream.service';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BullModule } from '@nestjs/bullmq';
   providers: [
     EncryptionService,
     NotificationGateway,
+    JetStreamService,
     SystemConfigService,
     ConfigurationProcessor,
     NotificationProcessor,
@@ -23,6 +25,7 @@ import { BullModule } from '@nestjs/bullmq';
   exports: [
     EncryptionService,
     SystemConfigService,
+    JetStreamService,
   ]
 })
 export class CoreModule {}
