@@ -40,6 +40,11 @@ export enum RateLimitDefaultOptions {
     LIMIT = 100,
 }
 
+// Default Redis TTL options
+export enum CacheTTLDefaultOptions {
+    ONE_MINUTE = 60000,
+}
+
 // Define auth options
 export const AuthOptions = {
     ISSUER_URL: environment.OIDC_ISSUER_URL,

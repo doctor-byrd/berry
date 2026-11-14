@@ -1,7 +1,9 @@
+import KeyvRedis from '@keyv/redis';
 import { APP_GUARD } from '@nestjs/core';
 import { Logger, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CacheModule } from '@nestjs/cache-manager';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
@@ -14,12 +16,27 @@ import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { CoreModule } from '../core/core.module';
 import { StorageModule } from '../storage/storage.module';
-import { DatabaseOptions, RateLimitDefaultOptions } from '../common/general';
+import { CacheTTLDefaultOptions, DatabaseOptions, RateLimitDefaultOptions } from '../common/general';
 import { CoreJobActions } from '@project/shared-types';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
+    // Redis Cache Configurations
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const redisUrl = environment.REDIS_URL; 
+        return {
+          stores: [
+            new KeyvRedis(redisUrl),
+          ],
+          ttl: CacheTTLDefaultOptions.ONE_MINUTE,
+        };
+      },
+    }),
     // BullMQ Module & Configurations
     BullModule.forRootAsync({
       imports: [ConfigModule],
